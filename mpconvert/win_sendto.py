@@ -33,11 +33,15 @@ def find_convert_path() -> str:
             convert_path = path.expandvars("%VIRTUAL_ENV%\\script\\mpconvert.exe")
     if not convert_path:
         print('cannot find mpconvert.exe script')
+
+    if not os.path.isabs(convert_path):
+        convert_path = os.path.abspath(convert_path)
+
     return convert_path
 
 
 #
-def CreateShortCut(lnk:str, target:str, working_in:str, args:str):  # ,icon
+def CreateShortCut(lnk: str, target: str, working_in: str, args: str):  # ,icon
     """
     create link file.
 
