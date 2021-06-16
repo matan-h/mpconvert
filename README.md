@@ -26,12 +26,11 @@ with `mpconvert [src-file]`. Without the src-file it open a file Browser dialog.
 
 ### GUI
 after you open the gui you will see:
-
-![screenshot](https://github.com/matan-h/mpconvert/tree/main/images/img.png?raw=true)
+![screenshot](https://github.com/matan-h/mpconvert/raw/main/images/img.png)
 
 explanation:
 
-![explanation](https://github.com/matan-h/mpconvert/tree/main/images/expl.png?raw=true)
+![explanation](https://github.com/matan-h/mpconvert/raw/main/images/expl.png)
 ## Right click "Send to..." option
 In order to add mpconvert in the "Send to..." right click menu just do:
 `python -m mpconvert.win_sendto`  
