@@ -6,6 +6,8 @@ from os import path
 from os.path import splitext
 
 #
+from typing import Optional
+
 import click
 import filetype
 #
@@ -19,6 +21,9 @@ default_p = print
 
 
 def default(src: str, dst: str, t: str):
+    """
+    default error handling
+    """
     p = default_p
     if not t:
         p('you forget to enter the type in \"convert as\" box.')
@@ -31,7 +36,18 @@ def default(src: str, dst: str, t: str):
     p(f"convert format '{t}' with file '{src}' not not support by Mpconvert now.")
 
 
-def convert(src, dst, inp_type):
+def convert(src, dst, inp_type)->int:
+    """
+    convert src to dst with convert type
+
+    Args:
+        src: src file
+        dst: dst file
+        inp_type: convert type
+
+    Returns: 1 if error
+
+    """
     try:
         if path.exists(dst):
             os.remove(dst)
@@ -83,7 +99,16 @@ def convert(src, dst, inp_type):
 inp_type_list = ["music", "movie", "image", "archive"]
 
 
-def guess_type(full_file):
+def guess_type(full_file)->Optional[str]:
+    """
+    guess type of file
+
+    Args:
+        full_file: file path
+
+    Returns:the guesses type, if can`t - return None
+
+    """
     mime: str = filetype.guess_mime(full_file)
     if not mime:
         return
@@ -127,6 +152,9 @@ def cli(file, dst_file, convert_type=None):
 @click.command(context_settings={"ignore_unknown_options": True})
 @click.argument("files", nargs=-1)
 def sendto(files):
+    """
+    sendto cli.
+    """
     from . import maingui
     if len(files) <= 1:  # not multiple
         maingui.main()
@@ -135,6 +163,9 @@ def sendto(files):
 
 
 def main():
+    """
+    main program for mpconvert
+    """
     if sys.argv[1:]:
         if sys.argv[1].upper() == '/$MULTIPLE':
             sys.argv.pop(0)

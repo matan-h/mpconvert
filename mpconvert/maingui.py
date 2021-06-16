@@ -7,13 +7,21 @@ import shutil
 import sys
 import PySimpleGUI as sg
 from . import info
-from .util import on_open, excepthook, popup_open_folder, progress_bar
+from .util import on_open, excepthook, popup_open_folder
 from . import convert
-
+from typing import Sequence
 convert.default_p = sg.popup_ok
 
+sg.theme('DarkAmber')  # Add a touch of color
+sys.excepthook = excepthook
 
-def convert_safe(src, dst, _inp_type):
+
+def convert_safe(src:str, dst:str, _inp_type:str) -> int:
+    """
+    passed the arguments to convert.convert and if error occur write it to convert-error.txt
+
+    Returns:1
+    """
     try:
         return convert.convert(src, dst, _inp_type)
     except Exception as _e:
@@ -27,10 +35,21 @@ def convert_safe(src, dst, _inp_type):
 
 
 #
-sg.theme('DarkAmber')  # Add a touch of color
-sys.excepthook = excepthook
+def convert_multiple(files:Sequence[str], converts_folder:str, dst_file_extension:str, inp_type:str, messege:str, title:str)->int:
+    """
+    open a progress bar to convert multiple files.
 
-def convert_multiple(files, converts_folder, dst_file_extension, inp_type, messege, title):
+    Args:
+        files: Sequence of files to convert
+        converts_folder:the dst folder path
+        dst_file_extension: the dst files extension
+        inp_type:the type of convert
+        messege:messege when done
+        title: title of the progress bar
+
+    Returns: 1 if error
+
+    """
     sg.OneLineProgressMeter(title, 0, len(files), '-pb-')
     for file in files:
         if not sg.OneLineProgressMeter(title, files.index(file) + 1, len(files), '-pb-'):
@@ -46,6 +65,10 @@ def convert_multiple(files, converts_folder, dst_file_extension, inp_type, messe
 
 
 def main():
+    """
+    start gui.
+
+    """
     file = on_open()
     #
     onlydir = Path.dirname(file)
@@ -103,7 +126,6 @@ def main():
                 continue
             #
             dst_file = None
-            converts_folder = ""
             if dst_file_extension:
                 if dst_file_extension[0] == ".":
                     dst_file_extension = dst_file_extension[1:]
@@ -113,8 +135,6 @@ def main():
                 n = convert_safe(file, dst_file, inp_type)
                 if n == 1:  # error
                     continue
-                # convert_object = set_as_dst_file(convert_object, dst_file)
-                # getattr(convert_object, convert_func.__name__)()
 
             elif event == "-convert-all-":
                 converts_folder = Path.join(onlydir, "converts")
@@ -152,21 +172,21 @@ def main():
                 folder = Path.abspath(folder)
             folder = str(pathlib.WindowsPath(folder))
             window.hide()
-            # try:
             mt_d = info.info(Path.join(folder, filename))
             info.gui(mt_d)
-            # except AttributeError:
-            #    import traceback
-
-            #    traceback.print_exc()
             window.un_hide()
-
-        # ic(event, values)
 
     window.close()
 
 
-def multiple(files: list):
+def multiple(files: Sequence[str]):
+    """
+    multiple window convert window
+
+    Args:
+        files: Sequence of file to convert
+
+    """
     try:
         guess_type = convert.guess_type(files[0])
     except Exception:

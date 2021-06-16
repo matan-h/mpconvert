@@ -6,6 +6,12 @@ import PySimpleGUI as sg
 
 
 def on_open():
+    """
+    on open the gui,open the file dialog if file not passed from the commandline and also check if the file exists.
+
+    Returns: file
+
+    """
     if sys.argv[1:]:
         argv = sys.argv
         file = " ".join(argv[1:])
@@ -21,7 +27,17 @@ def on_open():
     return file
 
 
-def popup_get_file(message, title=None):
+def popup_get_file(message: str, title:str):
+    """
+    open popup window with text, FileBrowse,ok and cancel
+
+    Args:
+        message: text for the text element
+        title: title of the window
+
+    Returns: file
+
+    """
     layout = [[sg.Text(message)],
               [sg.Input(key="-file-"), sg.FileBrowse()],
               [sg.OK(key="-ok-"), sg.Cancel(key="-cancel-"), ]]
@@ -37,6 +53,9 @@ def popup_get_file(message, title=None):
 
 
 def excepthook(cls, value, tb):
+    """
+    when error occur - write it to error.txt
+    """
     ms = f"""an error has occurred {cls}({value}) \n all traceback will write to error.txt"""
     print(ms)
     try:
@@ -51,6 +70,10 @@ def excepthook(cls, value, tb):
 
 
 def popup_open_folder(title, folder, file):
+    """
+    open popup window with title,for ask the user if want to open the file in Explorer,open file file with default application or not
+
+    """
     folder = str(pathlib.WindowsPath(folder))
     if file:
         file = str(pathlib.WindowsPath(file))
@@ -73,12 +96,3 @@ def popup_open_folder(title, folder, file):
     elif event == "open-file":
         if file:
             os.startfile(file)
-    return
-
-
-def progress_bar(key, iterable, *args, title='', **kwargs):
-    sg.OneLineProgressMeter(title, 0, len(iterable), key, *args, **kwargs)
-    for i, val in enumerate(iterable):
-        yield val
-        if not sg.OneLineProgressMeter(title, i + 1, len(iterable), key, *args, **kwargs):
-            break

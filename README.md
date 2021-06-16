@@ -1,23 +1,41 @@
-# convert
-convert is a python program to convert files from one format to another format (such as music,movies and images).
+# mpconvert
+mpconvert is a python program to convert convert media (music,movies and images).
 
 It can also download a file from url or from youtube.
 
-convert run only in windows.
-## screenshot
-![screenshot of convert-gui](convert-gui-image-link)
+mpconvert runs only in windows.
 
-### Installing
-for the installation you need python and pip. see [this guide](https://phoenixnap.com/kb/how-to-install-python-3-windows) for how to get that
+## Installing
+for the installation you need python and pip. see [this guide](https://phoenixnap.com/kb/how-to-install-python-3-windows) if you dont have them.
 
-To install with pip-
+To install with pip
 type in terminal:
 ```
-(sudo) pip install "https://github.com/matan-h/Convert/archive/main.zip"
+(sudo) pip install "https://github.com/matan-h/mpconvert/archive/main.zip"
 ```
-### usege
-just type:
-`convert-filw`
+this will create two commandline scripts:`mpconvert` and `info`
+## Usage
+### Command line
+You can use mpconvert from the commandline using the `mpconvert` command
+with `mpconvert [src-file] [dst-file] -t [music|movie|image|archive]`. without the -t it will automatically infer the file type.
+
+For example - `mpconvert Mozart.mp3 Mozart.wav` will convert the audio "Mozart" from format mp3 to wav format. If you dont trust the automatic infer you can tell `mpconvert` that the src-file is music by add `-t music` to the command.
+
+You can also use mpconvert command to open the `mpconvert-gui`
+with `mpconvert [src-file]`. Without the src-file it open a file Browser dialog.
+
+### GUI
+after you open the gui you will see:
+
+![screenshot](https://github.com/matan-h/mpconvert/tree/main/images/img.png?raw=true)
+
+explanation:
+
+![explanation](https://github.com/matan-h/mpconvert/tree/main/images/expl.png?raw=true)
+## Right click "Send to..." option
+In order to add mpconvert in the "Send to..." right click menu just do:
+`python -m mpconvert.win_sendto`  
+
 ## Built With
 * [PySimpleGUI](https://github.com/PySimpleGUI/PySimpleGUI) - for create the gui
 * [click](https://palletsprojects.com/p/click/) - for create the cli

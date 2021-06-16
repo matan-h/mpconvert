@@ -1,5 +1,3 @@
-from contextlib import contextmanager
-
 import pydub.exceptions
 import ffmpeg
 import PySimpleGUI as sg
@@ -8,7 +6,17 @@ import PIL.Image
 p = lambda s: sg.popup_ok(s)
 
 
-def ffmpeg_base(messege, text):
+def ffmpeg_base(messege:str, text:str)->str:
+    """
+    handle basic ffmpeg errors
+
+    Args:
+        messege: the python wrapper first line
+        text: the output from ffmpeg
+
+    Returns:text to display in popup
+
+    """
     sep = ':\n'
     #
     text = list(filter(None, text.split('\n')))
@@ -22,20 +30,36 @@ def ffmpeg_base(messege, text):
     return text
 
 
-def pydub_handler(e: pydub.exceptions.PydubException):
+def pydub_handler(e: pydub.exceptions.PydubException)->str:
+    """
+    parse pydub error to the pattern of ffmpeg basic errors
+    """
     text: str = e.args[0]
     messege = text.split('\n')[0]
     text = '\n'.join(text.split('\n')[1:])
     return ffmpeg_base(messege, text)
 
 
-def python_ffmpeg_handler(e: ffmpeg.Error):
+def python_ffmpeg_handler(e: ffmpeg.Error)->str:
+    """
+    parse python-ffmpeg error to the pattern of ffmpeg basic errors
+    """
     messege = e.args[0].split('(')[0]
     return ffmpeg_base(messege, e.stderr.decode('utf8'))
 
 
-def handler(e):
-    text = ''
+def handler(e)->int:
+    """
+    main error handler.
+    open popup with text
+
+    Args:
+        e: the exception
+    Returns: 1
+
+
+
+    """
     te = type(e)
     base = te.__base__
     # pydub
@@ -52,9 +76,8 @@ def handler(e):
 
     # file not found
     elif te == FileNotFoundError:
-        import traceback
         text = f'the file "{e.filename}" not found '
-
+    # ose error
     elif te == OSError or base == OSError:
         text = f"{e.strerror}: \"{e.filename}\""
 

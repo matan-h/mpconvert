@@ -8,7 +8,16 @@ from . import metadata
 import PySimpleGUI as sg
 
 
-def info(file):
+def info(file) -> dict:
+    """
+    guss type and find metadata on file
+
+    Args:
+        file: the file
+
+    Returns:dictionary of the guss type and metadata
+
+    """
     if not path.isabs(file):
         file = path.abspath(file)
     md_dict = metadata.metadata(file)
@@ -33,10 +42,16 @@ def info(file):
 
 
 def gui(d):
+    """
+    start metadata gui
+
+    Args:
+        d: dictionary of the guss type and metadata from info()
+
+    """
     if not d:
         print("close metadata gui")
         return
-    sg.theme("DarkAmber")
     # random_theme = lambda: random.choice(sg.list_of_look_and_feel_values())
     # r = random_theme()
     # print("use theme:", r)
@@ -50,7 +65,7 @@ def gui(d):
         clayout.append([sg.T(k, text_color=color), sg.T(":" * 10, text_color="#0099ff"), sg.T(v, text_color=color)])
     layout = [
         [sg.T("Convert metadata viewer", font="Courier 40")],
-        [sg.Column(clayout, scrollable=True, vertical_scroll_only=True, size=(500,None), key="-col-")],
+        [sg.Column(clayout, scrollable=True, vertical_scroll_only=True, size=(500, None), key="-col-")],
         [sg.Button("Close", key="-close-")]
     ]
 

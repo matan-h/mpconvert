@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name='convert',
+    name='mpconvert',
     version='0.0.0',
     license='MIT',
     description='# TODO description',
@@ -12,12 +12,12 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     author_email='matan.honig2@gmail.com',
-    url='https://github.com/matan-h/convert',
-    packages=['convert'],
+    url='https://github.com/matan-h/mpconvert',
+    packages=['mpconvert'],
     entry_points={
         "console_scripts": [
-            "convert-file = convert.convert:main",
-            "info = convert.info:cli",
+            "mpconvert = mpconvert.convert:main",
+            # "info = mpconvert.info:cli",
         ]
     },
     install_requires=['ffmpeg-python','click', 'pywin32', 'youtube_dl', 'PySimpleGUI', 'filetype',
