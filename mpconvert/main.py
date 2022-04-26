@@ -1,41 +1,96 @@
+import subprocess
 import glob
 import os
 import pathlib
 import traceback
+from platform import system
 from os import path as Path
 import shutil
 import sys
 import PySimpleGUI as sg
-from . import info
-from .util import on_open, excepthook, popup_open_folder
-from . import convert
+# from .util import on_open, excepthook, popup_open_folder
+from . import convert, errors
+from .utils import location, guess_type
 from typing import Sequence
-convert.default_p = sg.popup_ok
-
+from shutil import which
+# convert.default_p = sg.popup_ok
+sg.set_options(window_location=location or (None, None))
 sg.theme('DarkAmber')  # Add a touch of color
-sys.excepthook = excepthook
+sys.excepthook = errors.excepthook
 
 
-def convert_safe(src:str, dst:str, _inp_type:str) -> int:
+def popup_open_folder(title, folder, file):
+    """
+    open popup window with title,for ask the user if want to open the file in Explorer,open file file with default application or not
+    """
+    if os.name == "nt":
+        folder = str(pathlib.WindowsPath(folder))
+        if file:
+            file = str(pathlib.WindowsPath(file))
+    startfile = os.__dict__.get(
+        "startfile", lambda foldername: os.system('xdg-open "%s"' % foldername))
+
+    layout = [
+        [sg.T(title)],
+        [sg.Ok(), sg.B(f"Open The {'File' if file else 'folder'} In Explorer", key="open-folder"),
+         sg.B("Open the file (with default application)", key="open-file") if file else sg.T()]
+    ]
+    window = sg.Window(title, layout)
+    event, values = window.read(close=True)
+    if event == "open-folder":
+        if file:
+            print("open file in explorer:", file)
+            # print("command:",f'start explorer /select,\"{file}\"')
+            # explorer(file)
+            if os.name == "nt":
+                subprocess.call(["explorer", "/select", file], shell=True)
+                # os.system(f'explorer /select,\"{file}\"')
+
+            if system().lower() == "linux":
+                app = None
+                for fm in ["dolphin", "nautilus"]:
+                    if shutil.which(fm) is not None:
+                        app = fm
+                        break
+                if app:
+                    subprocess.call([app, "--select", file])
+
+        else:
+            print("open folder in explorer:", folder)
+            startfile(folder)
+            # os.system(f'explorer \"{folder}\"')
+
+    elif event == "open-file":
+        if file:
+            startfile(file)
+
+
+def convert_safe(src: str, dst: str, _inp_type: str) -> int:
     """
     passed the arguments to convert.convert and if error occur write it to convert-error.txt
 
     Returns:1
     """
     try:
-        return convert.convert(src, dst, _inp_type)
+        # return convert.convert(src, dst, _inp_type)
+        return convert.convertmap[_inp_type](src, dst)
     except Exception as _e:
+        t = type(_e)
+
         convert_error_file = "convert-error.txt"
         print(str(_e), file=sys.stderr)
+        importent = ''.join(map(lambda l: ']'.join(l.split("]")[
+                            1:]), filter(lambda x: x.startswith('['), str(_e).split('\n'))))
         eh = str(_e).split("\n")[0]
-        sg.popup_error(f"convert error:{eh}\nall traceback write to {convert_error_file}")
+        sg.popup_error(
+            f"convert error:{eh}\nall traceback write to {convert_error_file}\n{importent}")
         with open(convert_error_file, "w") as convert_error_io:
             convert_error_io.write(traceback.format_exc())
         return 1  # error
 
 
 #
-def convert_multiple(files:Sequence[str], converts_folder:str, dst_file_extension:str, inp_type:str, messege:str, title:str)->int:
+def convert_multiple(files: Sequence[str], converts_folder: str, dst_file_extension: str, inp_type: str, messege: str, title: str) -> int:
     """
     open a progress bar to convert multiple files.
 
@@ -64,20 +119,39 @@ def convert_multiple(files:Sequence[str], converts_folder:str, dst_file_extensio
     popup_open_folder(messege, converts_folder, None)
 
 
-def main():
+def main(file=None):
     """
     start gui.
 
     """
-    file = on_open()
+    if not file:
+        popup_layout = [
+            [sg.Text("please choose a file to convert")],
+            [sg.Input(key="-file-"), sg.FileBrowse()],
+            [sg.OK(key="-ok-"), sg.Cancel(key="-cancel-")]
+        ]
+        popup_win = sg.Window("Mpconvert", popup_layout)
+        e, v = popup_win()
+        popup_win.close()
+        if e == "-cancel-" or not v["-file-"]:
+            return 1  # exit,no file
+        file = v["-file-"]
+
+    if not os.path.exists(file):
+        s = f'file not found:"{file}"'
+        print(s)
+        sg.popup(s)
+        return 1
+
     #
     onlydir = Path.dirname(file)
     onlyname, file_extension = Path.splitext(file)
     # print("use name:", name)
-    guess_type = convert.guess_type(file)
+    gs_type = guess_type(file)
     #
     # All the stuff inside your window.
-    title = lambda _s, c=None: sg.T(_s, font="Courier 40", text_color="#00cc00" if not c else c)
+    def title(_s, c=None): return sg.T(
+        _s, font="Courier 40", text_color="#00cc00" if not c else c)
     # noinspection PyTypeChecker
     layout = [
         # ([sg.T(f"WARTING:{mess}", text_color="#ff0000")] if mess else []),
@@ -85,21 +159,20 @@ def main():
         # [sg.Text('Use:', text_color="#0066ff"), sg.T(cls_vname, key="-use-", text_color="#0066ff")],
         [sg.Text('filename:', text_color="#0099ff"),
          sg.InputText(Path.basename(file), key="-file-", text_color="#0099ff")],
-        [sg.Button('resave', key="-resave-", button_color=(None, "#0099ff"))],
         [sg.T()],
-        [sg.B("info", key="-info-")],
         [title("Convert:")],
         [sg.T("Convert To:"), sg.InputText(Path.basename(onlyname), key="-convert-file-"), sg.T("with extension:"),
          sg.InputText("", size=(None, 40), key="-convert-file-extension-")],
         [sg.T("Convert as:"),
-         sg.Combo(convert.inp_type_list, size=(None, 40), key='-inp-type-', default_value=guess_type,
+         sg.Combo(list(convert.convertmap.keys()), size=(None, 40), key='-inp-type-', default_value=gs_type,
                   enable_events=True)],
         [sg.B("Convert", button_color=(None, "#00cc00"), key="-convert-")],
-        [sg.B(f"Convert all {file_extension} files in folder", button_color=(None, "#00cc00"), key="-convert-all-")],
+        [sg.B(f"Convert all {file_extension} files in folder",
+              button_color=(None, "#00cc00"), key="-convert-all-")],
     ]
 
     # Create the Window
-    window = sg.Window('Convert Gui', layout).finalize()
+    window = sg.Window('Convert Gui', layout, resizable=True).finalize()
     window.bring_to_front()
     # convert_object.gui_window = window
     # Event Loop to process "events" and get the "values" of the inputs
@@ -122,7 +195,8 @@ def main():
             dst_file_extension = dst_file_extension.strip()
             to_file = values['-convert-file-']
             if not to_file:
-                sg.popup_error("you need to type a filename for convert", title="need to type filename")
+                sg.popup_error(
+                    "you need to type a filename for convert", title="need to type filename")
                 continue
             #
             dst_file = None
@@ -131,7 +205,8 @@ def main():
                     dst_file_extension = dst_file_extension[1:]
 
             if event == "-convert-":
-                dst_file = Path.join(onlydir, to_file) + "." + dst_file_extension if dst_file_extension else ''
+                dst_file = Path.join(onlydir, to_file) + "." + \
+                    dst_file_extension if dst_file_extension else ''
                 n = convert_safe(file, dst_file, inp_type)
                 if n == 1:  # error
                     continue
@@ -144,7 +219,8 @@ def main():
                 print("glob search", glob_p)
                 files_list = glob.glob(glob_p)
                 if not files_list:
-                    sg.popup("cant find files in this folder", f"(with pattern:\"{glob_p}\")")
+                    sg.popup("cant find files in this folder",
+                             f"(with pattern:\"{glob_p}\")")
                     continue
                 #
                 convert_code = convert_multiple(files_list, converts_folder, dst_file_extension, inp_type,
@@ -165,17 +241,6 @@ def main():
 
                 popup_open_folder(s, ex, dst_file)
 
-        elif event == "-info-":
-            filename = values["-file-"]
-            folder = onlydir
-            if not Path.isabs(folder):
-                folder = Path.abspath(folder)
-            folder = str(pathlib.WindowsPath(folder))
-            window.hide()
-            mt_d = info.info(Path.join(folder, filename))
-            info.gui(mt_d)
-            window.un_hide()
-
     window.close()
 
 
@@ -188,17 +253,19 @@ def multiple(files: Sequence[str]):
 
     """
     try:
-        guess_type = convert.guess_type(files[0])
+        gs_type = guess_type(files[0])
     except Exception:
-        guess_type = None
+        gs_type = None
     #
     onlydir = os.path.dirname(files[0])
     #
     layout = [
-        [sg.T("Convert All selected files To:"), sg.InputText("", size=(None, 40), key="-convert-file-extension-")],
+        [sg.T("Convert All selected files To:"), sg.InputText(
+            "", size=(None, 40), key="-convert-file-extension-")],
         [sg.T("Convert All as:"),
-         sg.Combo(convert.inp_type_list, size=(None, 40), key='-inp-type-', default_value=guess_type, )],
-        [sg.B("Convert All", button_color=(None, "#00cc00"), key="-convert-", bind_return_key=True)],
+         sg.Combo(list(convert.convertmap.keys()), size=(None, 40), key='-inp-type-', default_value=gs_type, )],
+        [sg.B("Convert All", button_color=(None, "#00cc00"),
+              key="-convert-", bind_return_key=True)],
     ]
     window = sg.Window('Convert Multiple files', layout).finalize()
     window.bring_to_front()

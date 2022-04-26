@@ -1,9 +1,7 @@
 # mpconvert
 mpconvert is a python program to convert convert media (music,movies and images).
 
-It can also download a file from url or from youtube.
-
-mpconvert runs only in windows.
+mpconvert not support macos.
 
 ## Installing
 for the installation you need python and pip. see [this guide](https://phoenixnap.com/kb/how-to-install-python-3-windows) if you dont have them.
@@ -28,22 +26,21 @@ with `mpconvert [src-file]`. Without the src-file it open a file Browser dialog.
 after you open the gui you will see:
 ![screenshot](https://github.com/matan-h/mpconvert/raw/main/images/img.png)
 
-explanation:
+<!-- explanation: -->
 
-![explanation](https://github.com/matan-h/mpconvert/raw/main/images/expl.png)
+<!-- ![explanation](https://github.com/matan-h/mpconvert/raw/main/images/expl.png) -->
 ## Right click "Send to..." option
-In order to add mpconvert in the "Send to..." right click menu just do:
-`python -m mpconvert.win_sendto`  
+In order to add mpconvert in the "Send to..." right click menu run `pip install pywin32` and then `win_sendto.py`
 
 ## Built With
-* [PySimpleGUI](https://github.com/PySimpleGUI/PySimpleGUI) - for create the gui
 * [click](https://palletsprojects.com/p/click/) - for create the cli
-* [ffmpeg-python](https://github.com/kkroening/ffmpeg-python) - for movie convert
+* [filetype](https://github.com/h2non/filetype.py) - Infer the file type
+* [moviepy](https://zulko.github.io/moviepy) - for movie convert
 * [Pillow](https://python-pillow.org) - for image converter
 * [pydub](http://pydub.com) - for audio converter
-* [filetype](https://github.com/h2non/filetype.py) - Infer the file type
-* [pywin32](https://github.com/mhammond/pywin32) - finding metadata of file
-* [youtube_dl](https://github.com/ytdl-org/youtube-dl) - download videos from youtube
+* [PySimpleGUI](https://github.com/PySimpleGUI/PySimpleGUI) - for create the gui
+* [rich](https://github.com/PySimpleGUI/PySimpleGUI) - debug (traceback)
+* [screeninfo](https://github.com/rr-/screeninfo) - detect window location
 
 ## Author
 matan h

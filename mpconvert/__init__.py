@@ -1,4 +1,1 @@
-from . import convert
-
-if __name__ == '__main__':
-    convert.main()
+from . import main, convert

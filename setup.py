@@ -7,7 +7,7 @@ setup(
     name='mpconvert',
     version='0.0.0',
     license='MIT',
-    description='# TODO description',
+    description='simple media converter app',
     author='matan h',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -16,12 +16,12 @@ setup(
     packages=['mpconvert'],
     entry_points={
         "console_scripts": [
-            "mpconvert = mpconvert.convert:main",
+            "mpconvert = mpconvert.__main__:converter",
             # "info = mpconvert.info:cli",
         ]
     },
-    install_requires=['ffmpeg-python','click', 'pywin32', 'youtube_dl', 'PySimpleGUI', 'filetype',
-                      'Pillow', 'pydub'],
+    install_requires=['click', 'filetype', 'moviepy',
+                      'Pillow', 'pydub', 'PySimpleGUI', 'rich', 'screeninfo'],
 
     # python_requires = '', # todo
 
