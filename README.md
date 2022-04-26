@@ -11,7 +11,7 @@ type in terminal:
 ```
 (sudo) pip install "https://github.com/matan-h/mpconvert/archive/main.zip"
 ```
-this will create two commandline scripts:`mpconvert` and `info`
+this will create the commandline scripts:`mpconvert`
 ## Usage
 ### Command line
 You can use mpconvert from the commandline using the `mpconvert` command
